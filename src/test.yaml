@@ -1,0 +1,77 @@
+# 采集平台名称
+platform_name: "mcmssc.com"
+# 采集书页列表
+book_list:
+  # 书本标签列表
+  book_list_url: "https://m.mcmssc.com/xclass/{catId}/{page}.html"
+  # 分类与平台的关联：`key` 为所采集平台分类ID，`value`为所分配自己平台的分类ID
+  cat_id_relation:
+    "1": "1"
+    "2": "2"
+    "3": "3"
+    "4": "4"
+    "5": "5"
+    "6": "6"
+    "7": "7"
+  # 获取当前页规则
+  page_patten: 'class="page_txt"\s+value="(\d+)/\d+"\s+size='
+  # 获取总页数规则
+  total_page_patten: 'class="page_txt"\s+value="\d+/(\d+)"\s+size='
+  # 获取采集书本的ID正则
+  book_id_patten: 'href="/(\d+_\d+)/"'
+# 书本章节
+book_chapter:
+  # 章节地址
+  book_chapter_url: "http://www.shuquge.com/txt/{bookId}/index.html"
+  # 获取章节ID规则
+  book_chapter_patten: 'href="/\d+_\d+/(\d+)\.html">([^/]+)</a></dd>'
+  extend:
+    - patten: '\s+'
+      replace: " "
+  # 检查最后一章，如果最后一章包含以下关键词，则表示书籍连载完结（优化匹配`book_process_patten`,如果未匹配到值取该项）
+  process_check_keywords:
+    - 大结局
+    - 终章
+    - 完结
+# 书籍连载状态关系：`key` 为所采集平台状态，`value`为所采自己平台的书籍状态
+book_process_relation:
+  finished:
+    name: "连载"
+    value: "1"
+  unfinished:
+    name: "全本"
+    value: "2"
+# 书本地址
+book_detail_url: 'http://www.mcmssc.com/{bookId}/'
+# 获取书本名称规则
+book_name_patten: '<h1>([^/]+)</h1>'
+# 获取作者规则
+author_name_patten: '<a\s+href="/author/\d+/">([^/]+)</a>'
+# 封面图片主机地址（如果是相对路径的情况需要填写）
+book_cover_host: 'http://m.mcmssc.com/'
+# 获取封面图片规则
+book_cover_patten: 'src="([^>]+)"\s+onerror='
+# 获取小说连载进度规则
+book_process_patten: '>状态：([^/]+)<'
+# 获取小说评价规则
+score_patten:
+# 获取小说阅读量规则
+visit_count_patten:
+# 获取小说描述规则：参数1为开始标签，参数2为结束标签，最终获取两者区间内的数据。
+book_desc_patten:
+  start: '<div id="intro">'
+  end: '</div>'
+  # 对 start 与 end 之间取的数据做二次处理，通过patten进行匹配，然后使用replace进行替换
+  extend:
+    - patten: '<a[^<]+</a>'
+      replace:
+    - patten: '<font[^<]+</font>'
+      replace:
+    - patten: '<br/><br/>'
+      replace: '<br/>'
+# 书籍内容页地址
+book_content_url: 'http://www.mcmssc.com/{bookId}/{indexId}.html'
+# 获取小说描述规则：参数1为开始标签，参数2为结束标签，最终获取两者区间内的数据。
+book_content_patten:
+  start: '</p>'
+  end: '<div align="center">'
