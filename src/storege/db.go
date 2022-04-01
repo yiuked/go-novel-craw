@@ -2,6 +2,7 @@ package storege
 
 import "C"
 import (
+	"github.com/yiuked/go-novel/src/utils"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"os"
@@ -10,18 +11,8 @@ import (
 var DB *gorm.DB
 
 func init() {
-	var dir string
-	var err error
-	if len(os.Getenv("CRAW_DATA_DIR")) > 0 {
-		dir = os.Getenv("CRAW_DATA_DIR")
-	} else {
-		dir, err = os.Getwd()
-		if err != nil {
-			panic(err)
-		}
-	}
-	dataDir := dir + string(os.PathSeparator) + "sqlite"
-	_, err = os.Stat(dataDir)
+	dataDir := utils.DataDir() + string(os.PathSeparator) + "sqlite"
+	_, err := os.Stat(dataDir)
 	if err != nil {
 		err := os.MkdirAll(dataDir, 0777)
 		if err != nil {

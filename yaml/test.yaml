@@ -43,22 +43,32 @@ book_process_relation:
     value: "2"
 # 书本地址
 book_detail_url: 'http://www.mcmssc.com/{bookId}/'
-# 获取书本名称规则
-book_name_patten: '<h1>([^/]+)</h1>'
-# 获取作者规则
-author_name_patten: '<a\s+href="/author/\d+/">([^/]+)</a>'
 # 封面图片主机地址（如果是相对路径的情况需要填写）
 book_cover_host: 'http://m.mcmssc.com/'
+# 获取书本名称规则
+book_name_patten:
+  require: true
+  patten: '<h1>([^/]+)</h1>'
+# 获取作者规则
+author_name_patten:
+  require: true
+  patten: '<a\s+href="/author/\d+/">([^/]+)</a>'
 # 获取封面图片规则
-book_cover_patten: 'src="([^>]+)"\s+onerror='
+book_cover_patten:
+  require: true
+  patten: 'src="([^>]+)"\s+onerror='
 # 获取小说连载进度规则
-book_process_patten: '>状态：([^/]+)<'
+book_process_patten:
+  patten: '>状态：([^/]+)<'
 # 获取小说评价规则
 score_patten:
+  patten:
 # 获取小说阅读量规则
 visit_count_patten:
+  patten:
 # 获取小说描述规则：参数1为开始标签，参数2为结束标签，最终获取两者区间内的数据。
 book_desc_patten:
+  patten:
   start: '<div id="intro">'
   end: '</div>'
   # 对 start 与 end 之间取的数据做二次处理，通过patten进行匹配，然后使用replace进行替换
@@ -73,5 +83,6 @@ book_desc_patten:
 book_content_url: 'http://www.mcmssc.com/{bookId}/{indexId}.html'
 # 获取小说描述规则：参数1为开始标签，参数2为结束标签，最终获取两者区间内的数据。
 book_content_patten:
+  patten:
   start: '</p>'
   end: '<div align="center">'
