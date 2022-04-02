@@ -8,6 +8,7 @@ type BookList struct {
 	BookPlatform string `gorm:"type:varchar(32) not null default '';"`                            // 平台名称
 	CatID        string `gorm:"type:varchar(32) not null default ''"`                             // 分类ID
 	BookID       string `gorm:"type:varchar(32) not null default '';index:idx_list"`              // 书籍ID
+	ChannelID    string `gorm:"type:varchar(32) not null default ''"`                             // 频道ID
 	BookListHash string `gorm:"type:varchar(32) not null default '';uniqueIndex:idx_list_unique"` // 唯一标识
 	BookState    int    `gorm:"type:tinyint(1) not null default 0"`                               // 书籍状态
 	Version      int    `gorm:"type:int(1) not null default 0"`                                   // 更新版本
@@ -21,6 +22,7 @@ type BookDetail struct {
 	BookTags          string  `gorm:"type:varchar(128) not null default ''"`                              // 标签，以","号分割
 	BookDetailHash    string  `gorm:"type:varchar(32) not null default '';uniqueIndex:idx_detail_unique"` // 唯一标识
 	CatID             string  `gorm:"type:varchar(32) not null default ''"`                               // 分类ID
+	ChannelID         string  `gorm:"type:varchar(32) not null default ''"`                               // 频道ID
 	BookProcess       string  `gorm:"type:varchar(32) not null default ''"`                               // 连载状态
 	BookName          string  `gorm:"type:varchar(128) not null default ''"`                              // 书名
 	AuthorName        string  `gorm:"type:varchar(64) not null default ''"`                               // 作者

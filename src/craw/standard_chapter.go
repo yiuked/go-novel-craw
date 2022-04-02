@@ -10,15 +10,17 @@ import (
 	"strings"
 )
 
+// GetBooksChapter 通过 BookList 下载章节
 func (c *StandardCrawAction) GetBooksChapter(rule *BookCrawRule) {
 	c.init(rule)
 	pageSize, page := 100, 0
 	for {
 		// 采用单协程分配，多协程处理，避免资源分配不重复
 		var bookList []storege.BookList
-		storege.DB.Where("book_state=1 AND book_platform=?", c.rule.PlatformName).Offset(page * pageSize).Limit(pageSize).Find(&bookList)
+		storege.DB().Where("book_state=1 AND book_platform=?", c.rule.PlatformName).Offset(page * pageSize).Limit(pageSize).Find(&bookList)
 		if len(bookList) <= 0 {
-			log.Println("get book summary task done")
+			log.Println("get book summary task done,start check update")
+			storege.DB().Where("book_state=1 AND book_platform=? AND updated_at ", c.rule.PlatformName).Offset(page * pageSize).Limit(pageSize).Find(&bookList)
 			break
 		}
 		page++
@@ -38,7 +40,7 @@ func (c *StandardCrawAction) GetBooksChapter(rule *BookCrawRule) {
 				}
 				// 从章节关键词中更新进度
 				if len(process) > 0 {
-					storege.DB.Model(&storege.BookDetail{}).Where("book_id=? AND book_platform=? AND book_process=''", s.ID).
+					storege.DB().Model(&storege.BookDetail{}).Where("book_id=? AND book_platform=? AND book_process=''", s.ID).
 						Update("book_process", process)
 				}
 
@@ -55,11 +57,11 @@ func (c *StandardCrawAction) GetBooksChapter(rule *BookCrawRule) {
 					bookChapters = append(bookChapters, chapter)
 				}
 
-				if err := storege.DB.CreateInBatches(&bookChapters, 100).Error; err != nil {
+				if err := storege.DB().CreateInBatches(&bookChapters, 100).Error; err != nil {
 					log.Println(err)
 					continue
 				}
-				storege.DB.Model(&storege.BookList{}).Where("id=?", s.ID).Update("version", gorm.Expr("version+1"))
+				storege.DB().Model(&storege.BookList{}).Where("id=?", s.ID).Update("version", gorm.Expr("version+1"))
 				log.Println("saved done ", s.BookID)
 			}
 		}(bookList)
@@ -89,10 +91,10 @@ func (c *StandardCrawAction) getBookChapter(detailHtml []byte) (map[string]strin
 	// 匹配连载状态
 	var process string
 	if len(c.rule.BookChapter.ProcessCheckKeywords) > 0 {
-		process = c.rule.BookProcessRelation.Unfinished.Name
+		process = c.rule.BookProcessUpdate.UpdatingName
 		for _, keyword := range c.rule.BookChapter.ProcessCheckKeywords {
 			if strings.IndexAny(chaptersMap[isLastChapter], keyword) > 0 {
-				process = c.rule.BookProcessRelation.Finished.Name
+				process = c.rule.BookProcessUpdate.EndName
 				break
 			}
 		}

@@ -1,7 +1,7 @@
 package storege
 
 func migrate() {
-	err := DB.AutoMigrate(
+	err := DB().AutoMigrate(
 		&BookList{},
 		&BookDetail{},
 		&BookChapter{})

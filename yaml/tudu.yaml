@@ -1,0 +1,75 @@
+# 采集平台名称
+platform_name: "tudu.com"
+# 采集书页列表
+book_list:
+  # 书本标签列表
+  book_list_url: "https://www.tadu.com/store/{catId}-a-0-15-a-20-p-{page}-{channelId}"
+  # 分类与平台的关联：`key` 为所采集平台分类ID，`value`为所分配自己平台的分类ID
+  channels:
+#    - channel_id: 98
+#      cat_id: [ "99","103","135","108","113","112","109","111","128","107","281" ]
+    - channel_id: 122
+      cat_id: [ "129","133","104","105","288","291" ]
+  # 获取当前页规则
+  page_patten: 'class="active" >(\d+)</a>'
+  # 获取总页数规则
+  total_page_patten: '"(\d+)" onkeypress="'
+  # 获取采集书本的ID正则
+  book_id_patten: 'href="/book/(\d+)/" class="bookNm"'
+# 书本章节
+book_chapter:
+  # 章节地址
+  book_chapter_url: "https://www.tadu.com/book/{bookId}/{chapterId}/"
+  # 获取章节ID规则
+  book_chapter_patten: 'href="/book/\d+/(\d+)/" target="_blank">([^/]+)</a>'
+# 书籍连载状态标识
+book_process_relation:
+  finished: "连载"
+  unfinished: "全本"
+# 书本地址
+book_detail_url: 'https://www.tadu.com/book/{bookId}/'
+# 封面本地保存路径
+book_cover_local_path: '/img/{catId}'
+# 获取书本名称规则
+book_name_patten:
+  require: true
+  patten: ':book_name"\s+content="([^>]+)">'
+# 获取作者规则
+author_name_patten:
+  require: true
+  patten: '<span\s+class="author">([^<]+)<'
+  replace:
+    - patten: " 著"
+      replace:
+# 获取封面图片规则
+book_cover_patten:
+  require: true
+  patten: 'class="bookImg"\s+target="_blank">\s+<img\s+src="[^"]+"\s+data-src="([^"]+)"'
+  replace:
+    - patten: "_a"
+      replace:
+# 获取小说连载进度规则
+book_process_patten:
+  patten: 'class="lz">([^/]+)<'
+# 字数匹配
+words_count_patten:
+  patten: '<span><em>([^<]+)</em>&nbsp;&nbsp;字</span>'
+# 获取小说标签规则
+book_tags_patten:
+  patten: '<a\s+target="_blank"\s+class="">([^<]+)<'
+# 获取小说描述规则：参数1为开始标签，参数2为结束标签，最终获取两者区间内的数据。
+book_desc_patten:
+  start: 'style="white-space: pre-wrap;text-indent:0;">'
+  end: '</p>'
+# 书籍内容页地址
+book_content_url: 'https://www.tadu.com/book/{bookId}/{indexId}/'
+# 获取小说描述规则：参数1为开始标签，参数2为结束标签，最终获取两者区间内的数据。
+book_content_patten:
+  new_page:
+    new_page_url_patten:
+      require: true
+      patten: 'id="bookPartResourceUrl"\s+value="([^"]+)"'
+    content_patten:
+      require: true
+      start: "callback({content:'"
+      end: "'})"

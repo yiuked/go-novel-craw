@@ -10,7 +10,6 @@ import (
 type StandardCrawAction struct {
 	rule           *BookCrawRule
 	RequestGLimit  int64
-	MaxPage        int
 	UpdateInterval time.Duration
 	currentG       *int64
 	mu             sync.Mutex

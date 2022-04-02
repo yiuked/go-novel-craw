@@ -13,7 +13,7 @@ func (c *StandardCrawAction) GetBooksSummary(rule *BookCrawRule) {
 	for {
 		// 采用单协程分配，多协程处理，避免资源分配不重复
 		var bookList []storege.BookList
-		storege.DB.Where("book_state=0 AND book_platform=?", c.rule.PlatformName).Offset(page * pageSize).Limit(pageSize).Find(&bookList)
+		storege.DB().Where("book_state=0 AND book_platform=?", c.rule.PlatformName).Offset(page * pageSize).Limit(pageSize).Find(&bookList)
 		if len(bookList) <= 0 {
 			log.Println("get book summary task done")
 			break
@@ -72,11 +72,11 @@ func (c *StandardCrawAction) GetBooksSummary(rule *BookCrawRule) {
 				book.Score = utils.StringToFloat64(score)
 				book.BookDesc, isBool = GetBetweenPatten(bytes, c.rule.BookDescPatten)
 				book.BookDetailHash = utils.Md5(c.rule.PlatformName + s.BookID)
-				if err := storege.DB.Create(&book).Error; err != nil {
+				if err := storege.DB().Create(&book).Error; err != nil {
 					log.Println(err)
 					continue
 				}
-				storege.DB.Model(&storege.BookList{}).Where("id=?", s.ID).Update("book_state", 1)
+				storege.DB().Model(&storege.BookList{}).Where("id=?", s.ID).Update("book_state", 1)
 				log.Println("saved done ", book.BookName)
 			}
 		}(bookList)

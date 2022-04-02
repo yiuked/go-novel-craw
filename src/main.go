@@ -1,10 +1,6 @@
 package main
 
 import (
-	"flag"
-	"github.com/yiuked/go-novel/src/craw"
-	"gopkg.in/yaml.v3"
-	"io/ioutil"
 	"log"
 	"os"
 )
@@ -29,26 +25,12 @@ func init() {
 	}
 }
 
+// 全局参数
+var (
+	source    string
+	goroutine int64
+)
+
 func main() {
-	bytes, err := ioutil.ReadFile("./yaml/tudu.yaml")
-	if err != nil {
-		panic(err)
-	}
-	rule := craw.BookCrawRule{}
-	if err := yaml.Unmarshal(bytes, &rule); err != nil {
-		panic(err)
-	}
-	g := flag.Int64("g", 1, "groutine work limited number")
-	maxPage := flag.Int("p", 2, "max page,default 0,craw all page")
-
-	bookCraw := craw.NewBookCraw(&rule, &craw.StandardCrawAction{RequestGLimit: *g, MaxPage: *maxPage})
-	//bookCraw.StartBookIDCraw()
-	//bookCraw.StartBookSummaryCraw()
-	//bookCraw.StartBookChapterCraw()
-	//bookCraw.StartBookCoverDownload()
-	bookCraw.StartBookContentCraw()
-
-	signal := make(chan os.Signal)
-	read := <-signal
-	log.Println("exit", read.String())
+	commandParse()
 }

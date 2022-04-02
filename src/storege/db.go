@@ -8,10 +8,10 @@ import (
 	"os"
 )
 
-var DB *gorm.DB
+var DBClient *gorm.DB
 
-func init() {
-	dataDir := utils.DataDir() + string(os.PathSeparator) + "sqlite"
+func ConnectDB() {
+	dataDir := utils.GetDataDir() + string(os.PathSeparator) + "sqlite"
 	_, err := os.Stat(dataDir)
 	if err != nil {
 		err := os.MkdirAll(dataDir, 0777)
@@ -21,9 +21,16 @@ func init() {
 		}
 	}
 	dataFile := dataDir + string(os.PathSeparator) + "gorm.db"
-	DB, err = gorm.Open(sqlite.Open(dataFile), &gorm.Config{})
+	DBClient, err = gorm.Open(sqlite.Open(dataFile), &gorm.Config{})
 	if err != nil {
 		panic(err)
 	}
 	migrate()
+}
+
+func DB() *gorm.DB {
+	if DBClient == nil {
+		ConnectDB()
+	}
+	return DBClient
 }
