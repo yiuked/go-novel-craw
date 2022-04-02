@@ -6,9 +6,12 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"os"
+	"sync"
 )
 
 var DBClient *gorm.DB
+
+var mu sync.Mutex
 
 func ConnectDB() {
 	dataDir := utils.GetDataDir() + string(os.PathSeparator) + "sqlite"
@@ -25,10 +28,19 @@ func ConnectDB() {
 	if err != nil {
 		panic(err)
 	}
+	sqlDB, err := DBClient.DB()
+	if err != nil {
+		panic(err)
+	}
+	sqlDB.SetMaxOpenConns(20)
+	sqlDB.SetMaxIdleConns(20)
+	DBClient = DBClient.Debug()
 	migrate()
 }
 
 func DB() *gorm.DB {
+	mu.Lock()
+	defer mu.Unlock()
 	if DBClient == nil {
 		ConnectDB()
 	}
