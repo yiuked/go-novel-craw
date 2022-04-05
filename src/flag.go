@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"sort"
+	"time"
 )
 
 func commandParse() {
@@ -49,8 +50,13 @@ func commandParse() {
 				Action: StartBookIDCraw,
 			},
 			{
-				Name:   "detail",
-				Usage:  "craw books detail to local",
+				Name: "detail",
+				Flags: []cli.Flag{
+					&cli.BoolFlag{
+						Name:  "update",
+						Usage: "if true, check the existence record and update the process status",
+					},
+				},
 				Action: StartBookDetailCraw,
 			},
 			{
@@ -59,16 +65,16 @@ func commandParse() {
 				Action: StartBookCoverCraw,
 			},
 			{
-				Name: "chapter",
+				Name:      "chapter",
+				UsageText: "If the start or end parameter is set, the chapter data is updated.",
 				Flags: []cli.Flag{
-					&cli.Int64Flag{
+					&cli.StringFlag{
 						Name:  "start",
-						Value: 20,
-						Usage: "开始时间",
+						Usage: "Seconds, data less than the current time minus this time will re-read the chapter.",
 					},
 					&cli.StringFlag{
 						Name:  "end",
-						Usage: "结束时间",
+						Usage: "Seconds, data greater than the current time minus this time will re-read the chapter.",
 					},
 				},
 				Usage:  "craw books chapter to local",
@@ -120,7 +126,8 @@ func StartBookDetailCraw(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	client.StartBookSummaryCraw()
+	processCheck := c.Bool("update")
+	client.StartBookSummaryCraw(processCheck)
 	waitSignal()
 	return nil
 }
@@ -140,7 +147,21 @@ func StartBookChapterCraw(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	client.StartBookChapterCraw()
+	var start, end time.Duration
+	if len(c.String("start")) > 0 {
+		start, err = utils.String2TimeDuration(c.String("start"))
+		if err != nil {
+			return err
+		}
+	}
+	if len(c.String("end")) > 0 {
+		end, err = utils.String2TimeDuration(c.String("end"))
+		if err != nil {
+			return err
+		}
+	}
+
+	client.StartBookChapterCraw(start, end)
 	waitSignal()
 	return nil
 }

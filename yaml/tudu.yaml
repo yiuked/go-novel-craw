@@ -19,7 +19,7 @@ book_list:
 # 书本章节
 book_chapter:
   # 章节地址
-  book_chapter_url: "https://www.tadu.com/book/{bookId}/{chapterId}/"
+  book_chapter_url: "https://www.tadu.com/book/{bookId}/"
   # 获取章节ID规则
   book_chapter_patten: 'href="/book/\d+/(\d+)/" target="_blank">([^/]+)</a>'
 # 书籍连载状态标识
@@ -62,7 +62,7 @@ book_desc_patten:
   start: 'style="white-space: pre-wrap;text-indent:0;">'
   end: '</p>'
 # 书籍内容页地址
-book_content_url: 'https://www.tadu.com/book/{bookId}/{indexId}/'
+book_content_url: 'https://www.tadu.com/book/{bookId}/{chapterId}/'
 # 获取小说描述规则：参数1为开始标签，参数2为结束标签，最终获取两者区间内的数据。
 book_content_patten:
   new_page:

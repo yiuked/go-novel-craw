@@ -5,13 +5,14 @@ import "gorm.io/gorm"
 // BookList 书籍列表
 type BookList struct {
 	gorm.Model
-	BookPlatform string `gorm:"type:varchar(32) not null default '';"`                            // 平台名称
-	CatID        string `gorm:"type:varchar(32) not null default ''"`                             // 分类ID
-	BookID       string `gorm:"type:varchar(32) not null default '';index:idx_list"`              // 书籍ID
-	ChannelID    string `gorm:"type:varchar(32) not null default ''"`                             // 频道ID
-	BookListHash string `gorm:"type:varchar(32) not null default '';uniqueIndex:idx_list_unique"` // 唯一标识
-	BookState    int    `gorm:"type:tinyint(1) not null default 0"`                               // 书籍状态
-	Version      int    `gorm:"type:int(1) not null default 0"`                                   // 更新版本
+	BookPlatform     string `gorm:"type:varchar(32) not null default '';"`                            // 平台名称
+	CatID            string `gorm:"type:varchar(32) not null default ''"`                             // 分类ID
+	BookID           string `gorm:"type:varchar(32) not null default '';index:idx_list"`              // 书籍ID
+	ChannelID        string `gorm:"type:varchar(32) not null default ''"`                             // 频道ID
+	BookListHash     string `gorm:"type:varchar(32) not null default '';uniqueIndex:idx_list_unique"` // 唯一标识
+	BookState        int    `gorm:"type:tinyint(1) not null default 0"`                               // 书籍采集状态(0未采集详情,1已采集详情)
+	BookProcessState int    `gorm:"type:tinyint(1) not null default 0"`                               // 书籍连载状态(0连载中,1已完结书籍)
+	Version          int    `gorm:"type:int(11) not null default 0"`                                  // 更新版本
 }
 
 // BookDetail 书本详情

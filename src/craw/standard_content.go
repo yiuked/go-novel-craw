@@ -36,7 +36,7 @@ func (c *StandardCrawAction) GetBooksContent(rule *BookCrawRule) {
 					log.Println(chapter.BookChapterID, "download")
 					continue
 				}
-				url := strings.ReplaceAll(c.rule.BookChapter.BookChapterURL, CrawCatID, chapter.CatID)
+				url := strings.ReplaceAll(c.rule.BookContentURL, CrawCatID, chapter.CatID)
 				url = strings.ReplaceAll(url, CrawBookID, chapter.BookID)
 				url = strings.ReplaceAll(url, CrawChapterID, chapter.BookChapterID)
 				bytes, err := utils.Get(url, nil)

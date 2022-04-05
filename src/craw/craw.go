@@ -3,6 +3,7 @@ package craw
 import (
 	"regexp"
 	"strings"
+	"time"
 )
 
 const (
@@ -94,9 +95,9 @@ type BookCrawAction interface {
 	// GetBooksID 获取指定分类下的所有书籍ID
 	GetBooksID(rule *BookCrawRule, maxPage int)
 	// GetBooksSummary 获取书本详情（基本信息）
-	GetBooksSummary(rule *BookCrawRule)
+	GetBooksSummary(rule *BookCrawRule, processCheck bool)
 	// GetBooksChapter 获取书本章节
-	GetBooksChapter(rule *BookCrawRule)
+	GetBooksChapter(rule *BookCrawRule, start, end time.Duration)
 	// GetBooksCover 下载封面图片
 	GetBooksCover(rule *BookCrawRule)
 	// GetBooksContent 获取书本内容
@@ -113,13 +114,13 @@ func (c *BookCraw) StartBookIDCraw(maxPage int) {
 }
 
 // StartBookSummaryCraw 开始采集书籍介绍
-func (c *BookCraw) StartBookSummaryCraw() {
-	c.action.GetBooksSummary(c.Rule)
+func (c *BookCraw) StartBookSummaryCraw(processCheck bool) {
+	c.action.GetBooksSummary(c.Rule, processCheck)
 }
 
 // StartBookChapterCraw 开始采集书籍章节信息
-func (c *BookCraw) StartBookChapterCraw() {
-	c.action.GetBooksChapter(c.Rule)
+func (c *BookCraw) StartBookChapterCraw(start, end time.Duration) {
+	c.action.GetBooksChapter(c.Rule, start, end)
 }
 
 // StartBookCoverDownload 封面图片下载

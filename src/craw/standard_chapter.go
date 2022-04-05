@@ -3,24 +3,33 @@ package craw
 import (
 	"github.com/yiuked/go-novel/src/storege"
 	"github.com/yiuked/go-novel/src/utils"
-	"gorm.io/gorm"
 	"log"
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // GetBooksChapter 通过 BookList 下载章节
-func (c *StandardCrawAction) GetBooksChapter(rule *BookCrawRule) {
+func (c *StandardCrawAction) GetBooksChapter(rule *BookCrawRule, start, end time.Duration) {
 	c.init(rule)
 	pageSize, page := 100, 0
+	version := time.Now().Unix()
+	if start > 0 && end > 0 {
+		storege.DB().Model(&storege.BookList{}).Where("book_state=1 AND book_platform=? AND updated_at BETWEEN ? AND ?",
+			c.rule.PlatformName, time.Now().Add(-start), time.Now().Add(-end)).
+			Update("version", version)
+	}
 	for {
 		// 采用单协程分配，多协程处理，避免资源分配不重复
 		var bookList []storege.BookList
-		storege.DB().Where("book_state=1 AND book_platform=?", c.rule.PlatformName).Offset(page * pageSize).Limit(pageSize).Find(&bookList)
+		if start > 0 && end > 0 {
+			storege.DB().Where("book_state=1 AND book_platform=? AND version=?", c.rule.PlatformName, version).Offset(page * pageSize).Limit(pageSize).Find(&bookList)
+		} else {
+			storege.DB().Where("book_state=1 AND book_platform=?", c.rule.PlatformName).Offset(page * pageSize).Limit(pageSize).Find(&bookList)
+		}
 		if len(bookList) <= 0 {
 			log.Println("get book summary task done,start check update")
-			storege.DB().Where("book_state=1 AND book_platform=? AND updated_at ", c.rule.PlatformName).Offset(page * pageSize).Limit(pageSize).Find(&bookList)
 			break
 		}
 		page++
@@ -42,9 +51,12 @@ func (c *StandardCrawAction) GetBooksChapter(rule *BookCrawRule) {
 				if len(process) > 0 {
 					storege.DB().Model(&storege.BookDetail{}).Where("book_id=? AND book_platform=? AND book_process=''", s.ID).
 						Update("book_process", process)
+					if process == c.rule.BookProcessUpdate.EndName {
+						storege.DB().Model(&storege.BookList{}).Where("book_id=? AND book_platform=? AND book_process=''", s.ID).
+							Update("book_process_state", 1)
+					}
 				}
 
-				var bookChapters []storege.BookChapter
 				for id, name := range chapters {
 					chapter := storege.BookChapter{
 						BookChapterName: name,
@@ -54,14 +66,12 @@ func (c *StandardCrawAction) GetBooksChapter(rule *BookCrawRule) {
 						BookPlatform:    c.rule.PlatformName,
 						BookChapterHash: utils.Md5(c.rule.PlatformName + s.BookID + id),
 					}
-					bookChapters = append(bookChapters, chapter)
+					if err := storege.DB().Create(&chapter).Error; err != nil {
+						log.Printf("save chapter to DB error,err[%v]\n", err)
+					}
 				}
-
-				if err := storege.DB().CreateInBatches(&bookChapters, 100).Error; err != nil {
-					log.Println(err)
-					continue
-				}
-				storege.DB().Model(&storege.BookList{}).Where("id=?", s.ID).Update("version", gorm.Expr("version+1"))
+				s.Version++
+				storege.DB().Select("version").Save(&s)
 				log.Println("saved done ", s.BookID)
 			}
 		}(bookList)
