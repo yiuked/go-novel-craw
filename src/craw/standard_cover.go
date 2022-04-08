@@ -12,14 +12,21 @@ import (
 
 func (c *StandardCrawAction) GetBooksCover(rule *BookCrawRule) {
 	c.init(rule)
+	tryAgingCnt := 0
+TRY:
 	pageSize, page := 100, 0
 	for {
 		// 采用单协程分配，多协程处理，避免资源分配不重复
 		var books []storege.BookDetail
 		storege.DB().Where("book_cover_download=0 AND book_platform=?", c.rule.PlatformName).Offset(page * pageSize).Limit(pageSize).Find(&books)
 		if len(books) <= 0 {
-			log.Println("books cover has download done")
-			break
+			log.Println("get book cover task done,wait 3 seconds try aging ...")
+			tryAgingCnt++
+			if tryAgingCnt >= 5 {
+				log.Println("try aging finished")
+				break
+			}
+			goto TRY
 		}
 		page++
 		c.Wait()

@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/urfave/cli/v2"
+	"github.com/yiuked/go-novel/src/api"
 	"github.com/yiuked/go-novel/src/craw"
 	"github.com/yiuked/go-novel/src/utils"
 	"gopkg.in/yaml.v3"
@@ -18,7 +19,7 @@ func commandParse() {
 			&cli.Int64Flag{
 				Name:        "goroutine",
 				Aliases:     []string{"g"},
-				Value:       2,
+				Value:       20,
 				Usage:       "set goroutine craw limited",
 				Destination: &goroutine,
 			},
@@ -38,11 +39,16 @@ func commandParse() {
 		},
 		Commands: []*cli.Command{
 			{
+				Name:   "api",
+				Usage:  "start web api service",
+				Action: StartWebApi,
+			},
+			{
 				Name: "bookid",
 				Flags: []cli.Flag{
 					&cli.IntFlag{
 						Name:  "page",
-						Value: 1,
+						Value: 5,
 						Usage: "set max craw page",
 					},
 				},
@@ -50,7 +56,8 @@ func commandParse() {
 				Action: StartBookIDCraw,
 			},
 			{
-				Name: "detail",
+				Name:      "detail",
+				UsageText: "craw books detail to local",
 				Flags: []cli.Flag{
 					&cli.BoolFlag{
 						Name:  "update",
@@ -96,6 +103,11 @@ func commandParse() {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func StartWebApi(c *cli.Context) error {
+	api.Routes()
+	return nil
 }
 
 func CrawClient(c *cli.Context) (*craw.BookCraw, error) {

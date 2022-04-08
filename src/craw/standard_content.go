@@ -13,14 +13,21 @@ import (
 // GetBooksContent 书本内容采集
 func (c *StandardCrawAction) GetBooksContent(rule *BookCrawRule) {
 	c.init(rule)
+	tryAgingCnt := 0
+TRY:
 	pageSize, page := 100, 0
 	for {
 		// 采用单协程分配，多协程处理，避免资源分配不重复
 		var chapters []storege.BookChapter
 		storege.DB().Where("book_chapter_state=0 AND book_platform=?", c.rule.PlatformName).Offset(page * pageSize).Limit(pageSize).Find(&chapters)
 		if len(chapters) <= 0 {
-			log.Println("books cover has download done")
-			break
+			log.Println("get book content task done,wait 3 seconds try aging ...")
+			tryAgingCnt++
+			if tryAgingCnt >= 5 {
+				log.Println("try aging finished")
+				break
+			}
+			goto TRY
 		}
 		page++
 		c.Wait()
@@ -48,8 +55,10 @@ func (c *StandardCrawAction) GetBooksContent(rule *BookCrawRule) {
 				var isBool bool
 				// 如果存在二级页采集
 				if len(c.rule.BookContentPatten.NewPage.NewPageURLPatten.Patten) > 0 {
+					parentURL := url
 					url, isBool = GetSinglePatten(bytes, c.rule.BookContentPatten.NewPage.NewPageURLPatten)
 					if !isBool {
+						log.Println(parentURL, " not match chapter download URL")
 						continue
 					}
 					newPageBytes, err := utils.Get(url, nil)
