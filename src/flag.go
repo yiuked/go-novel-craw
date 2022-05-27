@@ -32,7 +32,7 @@ func commandParse() {
 			&cli.StringFlag{
 				Name:        "source",
 				Aliases:     []string{"s"},
-				Value:       "./yaml/tudu.yaml",
+				Value:       "./yaml/default.yaml",
 				Usage:       "set need craw source yaml file",
 				Destination: &source,
 			},

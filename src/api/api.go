@@ -33,12 +33,29 @@ type BookChapter struct {
 	BookChapterURL  string `json:"book_chapter_url"`  // 本地存储路径
 }
 
+type Page struct {
+	Page     uint `json:"page" binding:"omitempty"`
+	PageSize uint `json:"page_size" binding:"omitempty"`
+}
+
 func Routes() {
 	r := gin.Default()
 
 	r.GET("/api/books", func(c *gin.Context) {
 		var books []storege.BookDetail
-		storege.DB().Limit(20).Find(&books)
+		var page Page
+		err := c.BindQuery(&page)
+		if err != nil {
+			c.JSON(200, "paras error")
+			return
+		}
+		if page.Page > 0 {
+			page.Page -= 1
+		}
+		if page.PageSize <= 0 {
+			page.PageSize = 20
+		}
+		storege.DB().Offset(int(page.Page * page.PageSize)).Limit(int(page.PageSize)).Find(&books)
 		var details []BookDetail
 
 		for _, book := range books {
@@ -50,7 +67,7 @@ func Routes() {
 				BookProcess: book.ChannelID,
 				BookName:    book.BookName,
 				AuthorName:  book.AuthorName,
-				BookCover:   oss(book.BookCover),
+				BookCover:   book.BookCover,
 				Score:       book.Score,
 				VisitCount:  book.VisitCount,
 				WordsCount:  book.WordsCount,
@@ -62,7 +79,20 @@ func Routes() {
 	})
 	r.GET("/api/chapters", func(c *gin.Context) {
 		var chapters []storege.BookChapter
-		storege.DB().Where("book_id=?", c.Query("book_id")).Order("book_chapter_id ASC").Limit(20).Find(&chapters)
+		var page Page
+		err := c.BindQuery(&page)
+		if err != nil {
+			c.JSON(200, "paras error")
+			return
+		}
+		if page.Page > 0 {
+			page.Page -= 1
+		}
+		if page.PageSize <= 0 {
+			page.PageSize = 20
+		}
+		storege.DB().Where("book_id=?", c.Query("book_id")).Order("book_chapter_id ASC").
+			Offset(int(page.Page * page.PageSize)).Limit(int(page.PageSize)).Find(&chapters)
 
 		var bookChapters []BookChapter
 		for _, chapter := range chapters {
@@ -71,7 +101,7 @@ func Routes() {
 				CatID:           chapter.CatID,
 				BookChapterID:   chapter.BookChapterID,
 				BookChapterName: chapter.BookChapterName,
-				BookChapterURL:  oss(chapter.BookChapterLocal),
+				BookChapterURL:  chapter.BookChapterLocal,
 			})
 		}
 		c.JSON(200, bookChapters)
@@ -84,8 +114,4 @@ func Routes() {
 	if err != nil {
 		panic(err)
 	}
-}
-
-func oss(path string) string {
-	return "http://192.168.3.135:7080/" + path
 }
